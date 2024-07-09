@@ -1,42 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from .model_choices import *
-from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin
-from django.utils.translation import gettext_lazy as _
-
-class CustomUserManager(BaseUserManager):
-    def create_user(self, email, full_name, password=None, **extra_fields):
-        if not email:
-            raise ValueError(_('The Email field must be set'))
-        email = self.normalize_email(email)
-        user = self.model(email=email, full_name=full_name, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, full_name, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-
-        return self.create_user(email, full_name, password, **extra_fields)
-
-class CustomUser(AbstractUser, PermissionsMixin): 
-    full_name = models.CharField(max_length=50)
-    email = models.EmailField(unique=True)
-    country = models.CharField(max_length=50)
-    city = models.CharField(max_length=50)
-    profile_picture = models.ImageField(upload_to="profile_image")
-    time_zone = models.CharField(max_length=6, choices=TimeZoneChoices)
-
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['full_name']
-
-    objects = CustomUserManager()
-
-    def __str__(self):
-        return self.email
-
-
+from authentication.models import UserAccount
 
 class SoftDeleteQuerySet(models.QuerySet):
     def delete(self):
@@ -79,6 +44,7 @@ class BaseModel(models.Model):
 
 
 class Projects(BaseModel):
+    user = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=100)
     currency = models.CharField(max_length=1, choices=CurrencyChoices)
     allow_web_tracker = models.BooleanField(default=True)
@@ -88,15 +54,16 @@ class Projects(BaseModel):
     count_mouse_clicks = models.BooleanField(default=True)
     count_keyboard_hits = models.BooleanField(default=True)
     manual_time_tracker = models.BooleanField(default=True)
-    team = models.ManyToManyField("Team", blank=True)
+    # team = models.ManyToManyField("Team", blank=True)
 
     def __str__(self) -> str:
         return self.name
 
 
 class Activity(models.Model):
+    user = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True)
     project = models.ForeignKey(Projects, on_delete=models.SET_NULL, null=True)
-    description = models.TextField( null=True)
+    description = models.TextField(blank=True, null=True)
     start_date = models.DateField()
     work_from = models.TimeField()
     work_to = models.TimeField()
@@ -104,22 +71,26 @@ class Activity(models.Model):
     keyboard_event_counts = models.PositiveIntegerField()
     mouse_event_counts = models.PositiveIntegerField()
     # active_window_title = models.CharField(max_length=255)
-    screenshot = models.ManyToManyField("ScreenShot", blank=True)
-    webcam = models.ManyToManyField("WebCam", blank=True)
+    artifacts = models.ManyToManyField("Artifact", blank=True)
 
-    def __str__(self) -> str:
-        return self.project.name
-
+    # def __str__(self) -> str:
+    #     return self
 
 
-class Team(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name="customuser")
+
+class Member(models.Model):
+    project = models.ForeignKey(Projects,on_delete=models.PROTECT, null=True, blank=True, related_name="members")
+    # user can not be deleted if user is linked as team member in any project
+    user = models.ForeignKey(UserAccount, on_delete=models.PROTECT, null=True, related_name="memberships")
+    
     is_active = models.BooleanField(default=False)
 
+    def __str__(self) -> str:
+        return self.user.email
 
-class ScreenShot(models.Model):
-    image = models.ImageField(upload_to="screenshots", blank=True)
 
-class WebCam(models.Model):
-    image = models.ImageField(upload_to="webcam_images", blank=True)
+class Artifact(models.Model):
+    image = models.ImageField(upload_to="artifacts", blank=True)
+    type = models.CharField(max_length=1, choices=ArtifactTypeChoices.choices, default=ArtifactTypeChoices.SCREENSHOT)
+
 

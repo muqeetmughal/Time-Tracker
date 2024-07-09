@@ -9,35 +9,89 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from rest_framework.decorators import action
 
-
-User = get_user_model()
+UserAccount = get_user_model()
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
+    queryset = UserAccount.objects.all()
+    serializer_class = UserAccountSerializer
     
 
 
-class ProjectViewSet(viewsets.ModelViewSet):
-    queryset = Projects.objects.all()
-    serializer_class = ProjectSerializer
+# class ProjectViewSet(viewsets.ModelViewSet):
+#     queryset = Projects.objects.all()
+#     serializer_class = ProjectSerializer
 
+class ProjectViewSet(viewsets.ModelViewSet):
+    serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Projects.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+# class ActivityViewSet(viewsets.ModelViewSet):
+#     serializer_class = ActivitySerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def get_queryset(self):
+#         return Activity.objects.filter(user=self.request.user)
+
+#     def perform_create(self, serializer):
+#         serializer.save(user=self.request.user)
+
+   
 
 class ActivityViewSet(viewsets.ModelViewSet):
-    queryset = Activity.objects.all()
-    serializer_class  = ActivitySerializer
+    serializer_class = ActivitySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Activity.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        if isinstance(serializer.validated_data, list):
+            # Bulk create if serializer data is a list
+            activities = [Activity(user=self.request.user, **item) for item in serializer.validated_data]
+            Activity.objects.bulk_create(activities)
+        else:
+            # Single object creation
+            serializer.save(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        if isinstance(request.data, list):
+            # If request data is a list, many=True for bulk create
+            serializer = self.get_serializer(data=request.data, many=True)
+        else:
+            # Otherwise, treat as a single object
+            serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+
+
+
+
+
 
 
 class TeamViewSet(viewsets.ModelViewSet):
-    queryset = Team.objects.all()
+    queryset = Member.objects.all()
     serializer_class = TeamSerializer
 
 
 class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = CustomUserSerializer
+    queryset = UserAccount.objects.all()
+    serializer_class = UserAccountSerializer
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
@@ -56,7 +110,7 @@ def get_token_for_user(user):
 
 class UserLoginView(generics.CreateAPIView):
     serializer_class = UserLoginSerializer
-    queryset = User.objects.all()
+    queryset = UserAccount.objects.all()
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):

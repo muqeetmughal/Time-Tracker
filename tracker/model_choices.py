@@ -1,5 +1,8 @@
 from django.db import models
 
+class ArtifactTypeChoices(models.TextChoices):
+        SCREENSHOT = "s" , "Screenshot"
+        WEB_CAM = "w" , "Web Cam"
 
 class CurrencyChoices(models.TextChoices):
         USD = "U" , "USD"
@@ -13,7 +16,7 @@ class ScreenshotInterval(models.TextChoices):
 
 class ActivityType(models.TextChoices):
         DESKTOP = "D" , "Desktop"
-        MENUAL = "M" , "Menual"
+        MANUAL = "M" , "Manual"
         WEB = "W" , "Web"
         Mobile = "B" , "Mobile"
 

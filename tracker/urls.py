@@ -8,6 +8,7 @@ router = DefaultRouter()
 router.register(r"project", ProjectViewSet, basename="project")
 router.register(r"activity", ActivityViewSet, basename="activity")
 router.register(r"team", TeamViewSet, basename="team")
+router.register(r'activities', ActivityViewSet, basename="activities")
 
 
 urlpatterns = [
