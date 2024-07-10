@@ -5,13 +5,28 @@ class ArtifactTypeChoices(models.TextChoices):
         WEB_CAM = "w" , "Web Cam"
 
 class CurrencyChoices(models.TextChoices):
-        USD = "U" , "USD"
-        PKR = "P" , "PKR"
+        USD = "US", "USD"
+        PKR = "PK", "PKR"
+        EUR = "EU", "EUR"
+        GBP = "GB", "GBP"
+        JPY = "JP", "JPY"
+        CAD = "CA", "CAD"
+        AUD = "AU", "AUD"
+        INR = "IN", "INR"
+        CNY = "CN", "CNY"
+        SGD = "SG", "SGD"
+        CHF = "CH", "CHF"
+        NZD = "NZ", "NZD"
+        RUB = "RU", "RUB"
+        BRL = "BR", "BRL"
+        ZAR = "ZA", "ZAR"
+
 
 class ScreenshotInterval(models.TextChoices):
-        FIVE_MINUTES = "F" , "Five_Minutes"
-        TEN_MINUTES = "T" , "Ten_Minutes"
-        SIXTY_MINUTES = "S" , "Sixty_Minutes"
+        FIVE_MINUTES = "F" , "Five Minutes"
+        TEN_MINUTES = "T" , "Ten Minutes"
+        THIRTY_MINUTES = "TH", "Thirty Minutes"
+        SIXTY_MINUTES = "S" , "Sixty Minutes"
 
 class RoleChoices(models.TextChoices):
        ADMIN =  "A", "Admin"

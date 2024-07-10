@@ -5,8 +5,7 @@ from authentication.models import UserAccount
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        # fields = "__all__"
-        exclude = ["deleted_at", "user"]
+        fields = ["id", "name", "currency", "screenshot_intereval"]
         read_only_fields = ['id', 'user'] 
 
 class ActivitySerializer(serializers.ModelSerializer):

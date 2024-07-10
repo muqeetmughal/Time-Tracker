@@ -46,11 +46,11 @@ class BaseModel(models.Model):
 class Project(BaseModel):
     user = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=100)
-    currency = models.CharField(max_length=1, choices=CurrencyChoices, default=CurrencyChoices.USD)
+    currency = models.CharField(max_length=2, choices=CurrencyChoices, default=CurrencyChoices.USD)
     allow_web_tracker = models.BooleanField(default=True)
     allow_desktop_tracker = models.BooleanField(default=True)
     take_screenshots = models.BooleanField(default=True)
-    screenshot_interval = models.CharField(max_length=1, choices=ScreenshotInterval.choices, default=ScreenshotInterval.FIVE_MINUTES)
+    screenshot_interval = models.CharField(max_length=2, choices=ScreenshotInterval.choices, default=ScreenshotInterval.FIVE_MINUTES)
     count_mouse_clicks = models.BooleanField(default=True)
     count_keyboard_hits = models.BooleanField(default=True)
     manual_time_tracker = models.BooleanField(default=True)
