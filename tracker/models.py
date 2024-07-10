@@ -43,14 +43,14 @@ class BaseModel(models.Model):
         return self.deleted_at is not None
 
 
-class Projects(BaseModel):
+class Project(BaseModel):
     user = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=100)
-    currency = models.CharField(max_length=1, choices=CurrencyChoices)
+    currency = models.CharField(max_length=1, choices=CurrencyChoices, default=CurrencyChoices.USD)
     allow_web_tracker = models.BooleanField(default=True)
     allow_desktop_tracker = models.BooleanField(default=True)
     take_screenshots = models.BooleanField(default=True)
-    screenshot_interval = models.CharField(max_length=1, choices=ScreenshotInterval)
+    screenshot_interval = models.CharField(max_length=1, choices=ScreenshotInterval.choices, default=ScreenshotInterval.FIVE_MINUTES)
     count_mouse_clicks = models.BooleanField(default=True)
     count_keyboard_hits = models.BooleanField(default=True)
     manual_time_tracker = models.BooleanField(default=True)
@@ -62,7 +62,7 @@ class Projects(BaseModel):
 
 class Activity(models.Model):
     user = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True)
-    project = models.ForeignKey(Projects, on_delete=models.SET_NULL, null=True)
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True)
     description = models.TextField(blank=True, null=True)
     start_date = models.DateField()
     work_from = models.TimeField()
@@ -79,10 +79,11 @@ class Activity(models.Model):
 
 
 class Member(models.Model):
-    project = models.ForeignKey(Projects,on_delete=models.PROTECT, null=True, blank=True, related_name="members")
+    project = models.ForeignKey(Project, on_delete=models.PROTECT, null=True, blank=True, related_name="members")
     # user can not be deleted if user is linked as team member in any project
     user = models.ForeignKey(UserAccount, on_delete=models.PROTECT, null=True, related_name="memberships")
-    
+    role = models.CharField(max_length=1, choices=RoleChoices.choices, default=RoleChoices.WORKER)
+    invitation_accepted = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
 
     def __str__(self) -> str:

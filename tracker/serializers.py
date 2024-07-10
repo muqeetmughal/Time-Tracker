@@ -1,14 +1,16 @@
 from rest_framework import serializers
-from .models import * 
+from tracker.models import * 
+from authentication.models import UserAccount
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Projects
+        model = Project
         # fields = "__all__"
         exclude = ["deleted_at", "user"]
         read_only_fields = ['id', 'user'] 
 
 class ActivitySerializer(serializers.ModelSerializer):
+    project_name = serializers.ReadOnlyField()
     class Meta:
         model = Activity
         exclude = ["user"]
@@ -26,17 +28,22 @@ class ActivitySerializer(serializers.ModelSerializer):
 class UserAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAccount
-        fields = ["id", "full_name", "email", "country", "city", "profile_picture", "time_zone", "password"]
+        fields = ["id", "full_name", "email", "country", "city", "image", "time_zone", "password"]
 
-class TeamSerializer(serializers.ModelSerializer):
+class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = "__all__"
 
 
-class UserLoginSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(max_length=255)
+# class UserLoginSerializer(serializers.ModelSerializer):
+#     email = serializers.EmailField(max_length=255)
 
+#     class Meta:
+#         model = UserAccount
+#         fields = ['email', 'password']
+
+class ArtifactSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserAccount
-        fields = ['email', 'password']
+        model = Artifact
+        fields = "__all__"

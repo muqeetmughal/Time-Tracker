@@ -13,6 +13,10 @@ class ScreenshotInterval(models.TextChoices):
         TEN_MINUTES = "T" , "Ten_Minutes"
         SIXTY_MINUTES = "S" , "Sixty_Minutes"
 
+class RoleChoices(models.TextChoices):
+       ADMIN =  "A", "Admin"
+       SUPERVISOR = "S", "Supervisor"
+       WORKER = "W", "Worker"
 
 class ActivityType(models.TextChoices):
         DESKTOP = "D" , "Desktop"

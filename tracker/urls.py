@@ -4,17 +4,18 @@ from .views import *
 
 router = DefaultRouter()
 
-# router.register(r"user", CustomUserViewSet, basename="customuser")
+# router.register(r"user", UserAccountViewSet, basename="customuser")
 router.register(r"project", ProjectViewSet, basename="project")
 router.register(r"activity", ActivityViewSet, basename="activity")
-router.register(r"team", TeamViewSet, basename="team")
-router.register(r'activities', ActivityViewSet, basename="activities")
+router.register(r"member", MemberViewSet, basename="member")
+router.register(r"artifact", ArtifactViewSet, basename="artifact")
+
 
 
 urlpatterns = [
-    path('register/', RegisterView.as_view(), name='register'),
-    path('login/', UserLoginView.as_view(), name='login'),
-    path('logout/', LogoutView.as_view(), name="logout"),
+    # path('register/', RegisterView.as_view(), name='register'),
+    # path('login/', UserLoginView.as_view(), name='login'),
+    # path('logout/', LogoutView.as_view(), name="logout"),
     path('', include(router.urls)),
     
 ] 
