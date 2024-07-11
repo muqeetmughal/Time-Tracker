@@ -30,6 +30,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     # -----additional added
     # phone = models.CharField(max_length=20)
     # allow_web_login = models.BooleanField(default=True)
+    full_name = models.CharField(max_length=50, blank=True, null=True)
     country = models.CharField(max_length=50, blank=True, null=True)
     city = models.CharField(max_length=50, blank=True, null=True)
     time_zone = models.CharField(max_length=6, choices=TimeZoneChoices.choices)

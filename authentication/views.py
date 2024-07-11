@@ -2,6 +2,11 @@ from rest_framework import generics, response, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from authentication.serializers import ProfileSerializer, CreateProfileSerializer
 from authentication.models import Profile
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+from authentication.serializers import UserAccountSerializer
 
 
 class SignupView(generics.CreateAPIView):
@@ -56,3 +61,21 @@ class ProfileCreateView(generics.ListCreateAPIView):
                 },
                 status=status.HTTP_409_CONFLICT,
             )
+
+
+class LoginView(generics.GenericAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = UserAccountSerializer
+
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        password = request.data.get("password")
+        user = authenticate(email=email, password=password)
+        if user:
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            })
+        else:
+            return Response({"detail": "Invalid credentials"}, status=400)
