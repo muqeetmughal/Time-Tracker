@@ -1,38 +1,72 @@
 from rest_framework import serializers
-from tracker.models import * 
+from tracker.models import *
 from authentication.models import UserAccount
+from authentication.serializers import ProfileSerializer
+class MemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Membership
+        fields = "__all__"
+
 
 class ProjectSerializer(serializers.ModelSerializer):
+    admin_profile_name = serializers.ReadOnlyField()
+    admin_profile_email = serializers.ReadOnlyField()
+    members = MemberSerializer(many=True, read_only=True)
     class Meta:
         model = Project
-        fields = ["id", "name", "currency", "screenshot_intereval"]
-        read_only_fields = ['id', 'user'] 
+        fields = "__all__"
+        read_only_fields = [
+            "id",
+            "created_by",
+            "currency",
+            "screenshot_intereval",
+            "allow_web_tracker",
+            "allow_desktop_tracker",
+            "manual_time",
+            "mouse",
+            "keyboard",
+            "screenshot_interval",
+            "take_screenshots",
+            "archived_at",
+            "admin_profile"
+        ]
+        
+        # depth = 1
+
 
 class ActivitySerializer(serializers.ModelSerializer):
     project_name = serializers.ReadOnlyField()
+
     class Meta:
         model = Activity
-        exclude = ["user"]
-        read_only_fields = ['id', 'user'] 
+        exclude = ["user", "shots"]
+        read_only_fields = ["id", "user"]
 
-    def create(self, validated_data):
-        # Override create method to handle single instance or list
-        if isinstance(validated_data, list):
-            return [Activity.objects.create(**item) for item in validated_data]
-        else:
-            return Activity.objects.create(**validated_data)
-    
+    def validate(self, attrs):
+        return super().validate(attrs)
+
+    # def create(self, validated_data):
+    #     # Override create method to handle single instance or list
+    #     if isinstance(validated_data, list):
+    #         return [Activity.objects.create(**item) for item in validated_data]
+    #     else:
+    #         return Activity.objects.create(**validated_data)
 
 
 class UserAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAccount
-        fields = ["id", "full_name", "email", "country", "city", "image", "time_zone", "password"]
+        fields = [
+            "id",
+            "full_name",
+            "email",
+            "country",
+            "city",
+            "image",
+            "time_zone",
+            "password",
+        ]
 
-class MemberSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Member
-        fields = "__all__"
 
 
 # class UserLoginSerializer(serializers.ModelSerializer):
@@ -42,7 +76,8 @@ class MemberSerializer(serializers.ModelSerializer):
 #         model = UserAccount
 #         fields = ['email', 'password']
 
-class ArtifactSerializer(serializers.ModelSerializer):
+
+class ShotSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Artifact
+        model = Shot
         fields = "__all__"

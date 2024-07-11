@@ -8,6 +8,10 @@ from authentication.managers import CustomUserManager
 from django.core.validators import EmailValidator
 from django.conf import settings
 from datetime import datetime
+from common.models import BaseModel
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.db.models import F
 
 
 UserAccount = settings.AUTH_USER_MODEL
@@ -16,7 +20,6 @@ email_validator = EmailValidator(message="%(value)s is not a valid email address
 
 class UserAccount(AbstractBaseUser, PermissionsMixin):
 
-    full_name = models.CharField(max_length=100, null=True, blank=True)
     email = models.EmailField(_("Email address"), unique=True, 
         error_messages={
             'unique': 'This Email is already registered. Please choose a different one.',
@@ -26,8 +29,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 
     # -----additional added
     # phone = models.CharField(max_length=20)
-    image = models.ImageField(upload_to="profile_images", null=True)
-    allow_web_login = models.BooleanField(default=True)
+    # allow_web_login = models.BooleanField(default=True)
     country = models.CharField(max_length=50, blank=True, null=True)
     city = models.CharField(max_length=50, blank=True, null=True)
     time_zone = models.CharField(max_length=6, choices=TimeZoneChoices.choices)
@@ -51,3 +53,31 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     # Call the validate_email function with a custom message
     def clean(self):
         email_validator(self.email)
+
+class Profile(BaseModel):
+    USER_TYPES = (
+        ("freelancer", "Freelancer"),
+        ("client", "Client"),
+    )
+    
+    image = models.ImageField(upload_to="profile_images",null=True, blank=True)
+    
+    name = models.CharField(max_length=255,null=True, blank=True)
+    company_name = models.CharField(max_length=255, null=True, blank=True)
+    phone = models.CharField(max_length=20, null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name="profiles")
+    type = models.CharField(max_length=10, choices=USER_TYPES)
+    active = models.BooleanField(default=False)
+    class Meta:
+        unique_together = ("user", "type")
+
+    def __str__(self):
+        return f"{self.user.email} ({self.get_type_display()})"
+    
+    
+@receiver(post_save, sender=Profile)
+def ensure_single_active_profile(sender, instance, created, **kwargs):
+    if instance.active or not instance.active:
+        Profile.objects.filter(user=instance.user).exclude(pk=instance.pk).update(active=~F('active'))

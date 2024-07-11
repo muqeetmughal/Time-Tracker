@@ -7,11 +7,15 @@ from django.contrib.auth import get_user_model
 from django.db.models import F, Q
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
-from rest_framework.filters import SearchFilter
-import django_filters.rest_framework as filters
+from tracker.filters import ActivityFilter
 from django.contrib.auth import authenticate
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 from rest_framework.decorators import action
+from authentication.models import Profile
+import django_filters.rest_framework as filters
 
 UserAccount = get_user_model()
 
@@ -19,7 +23,6 @@ UserAccount = get_user_model()
 class UserAccountViewSet(viewsets.ModelViewSet):
     queryset = UserAccount.objects.all()
     serializer_class = UserAccountSerializer
-    
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -27,24 +30,38 @@ class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Project.objects.filter(user=self.request.user)
+        qs = Project.objects.all()
+        if self.action == "list":
+            qs = qs.filter(
+                created_by=self.request.user.profiles.filter(active=True).first()
+            )
+            qs = qs.annotate(
+                admin_profile_name=F("created_by__name"),
+                admin_profile_email=F("created_by__user__email"),
+            )
+            qs.prefetch_related("members")
+
+        return qs
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(
+            created_by=self.request.user.profiles.filter(active=True).first()
+        )
 
-  
-
-
-class ActivityFilter(filters.FilterSet):
-    project = filters.ModelMultipleChoiceFilter(
-        field_name='project',
-        queryset=Project.objects.filter(),  # Set default empty queryset
-        label='Project Names'
-    )
-
-    class Meta:
-        model = Activity
-        fields = ['project']
+    def send_invites(self):
+        # [
+        #     {
+        #         "email": "saad@infintrixtech.com",
+        #         "rate": "15",
+        #         "role": "worker"
+        #     },
+        #     {
+        #         "email": "abdulmuqeetwork@gmail.com",
+        #         "rate": "10",
+        #         "role": "supervisor"
+        #     }
+        # ]
+        return
 
 
 class ActivityViewSet(viewsets.ModelViewSet):
@@ -62,7 +79,10 @@ class ActivityViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         if isinstance(serializer.validated_data, list):
             # Bulk create if serializer data is a list
-            activities = [Activity(user=self.request.user, **item) for item in serializer.validated_data]
+            activities = [
+                Activity(user=self.request.user, **item)
+                for item in serializer.validated_data
+            ]
             Activity.objects.bulk_create(activities)
         else:
             # Single object creation
@@ -79,19 +99,21 @@ class ActivityViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
 
-class MemberViewSet(viewsets.ModelViewSet):
-    queryset = Member.objects.all()
+class MembershipViewSet(viewsets.ModelViewSet):
+    queryset = Membership.objects.all()
     serializer_class = MemberSerializer
-
 
     # custom action list current user invitation
 
-class ArtifactViewSet(viewsets.ModelViewSet):
-    queryset = Artifact.objects.all()
-    serializer_class = ArtifactSerializer
+
+class ShotViewSet(viewsets.ModelViewSet):
+    queryset = Shot.objects.all()
+    serializer_class = ShotSerializer
 
 
 # class RegisterView(generics.CreateAPIView):
@@ -128,7 +150,7 @@ class ArtifactViewSet(viewsets.ModelViewSet):
 #             token = get_token_for_user(user)
 #             return Response({'token': token, 'msg': 'Login Successful'}, status=status.HTTP_200_OK)
 #         else:
-#             return Response({'errors': {"non_field_errors": ['Email or Password is not valid']}}, status=status.HTTP_400_BAD_REQUEST)        
+#             return Response({'errors': {"non_field_errors": ['Email or Password is not valid']}}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # class LogoutView(APIView):

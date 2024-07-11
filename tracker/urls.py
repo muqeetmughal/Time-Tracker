@@ -5,10 +5,10 @@ from .views import *
 router = DefaultRouter()
 
 # router.register(r"user", UserAccountViewSet, basename="customuser")
-router.register(r"project", ProjectViewSet, basename="project")
-router.register(r"activity", ActivityViewSet, basename="activity")
-router.register(r"member", MemberViewSet, basename="member")
-router.register(r"artifact", ArtifactViewSet, basename="artifact")
+router.register(r"projects", ProjectViewSet, basename="project")
+router.register(r"activities", ActivityViewSet, basename="activity")
+router.register(r"members", MembershipViewSet, basename="member")
+router.register(r"shots", ShotViewSet, basename="artifact")
 
 
 

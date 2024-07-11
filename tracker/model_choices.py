@@ -1,6 +1,6 @@
 from django.db import models
 
-class ArtifactTypeChoices(models.TextChoices):
+class ShotTypeChoices(models.TextChoices):
         SCREENSHOT = "s" , "Screenshot"
         WEB_CAM = "w" , "Web Cam"
 

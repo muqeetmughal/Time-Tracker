@@ -1,8 +1,18 @@
 from django.contrib import admin
 from .models import *
 
+class ProjectAdmin(admin.ModelAdmin):
+    model = Project
+    list_display = ['name','currency','created_by']
 
+admin.site.register(Project, ProjectAdmin)
+class ActivityAdmin(admin.ModelAdmin):
+    model = Activity
+    list_display = ['user','project','type']
 
-admin.site.register(Project)
-admin.site.register(Activity)
-admin.site.register([Artifact, Member])
+admin.site.register(Activity, ActivityAdmin)
+admin.site.register(Shot)
+class MemberAdmin(admin.ModelAdmin):
+    model = Membership
+    list_display = ['project','user','role', 'is_active']
+admin.site.register(Membership, MemberAdmin)
