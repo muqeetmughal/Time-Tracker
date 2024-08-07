@@ -8,11 +8,11 @@ class ProjectAdmin(admin.ModelAdmin):
 admin.site.register(Project, ProjectAdmin)
 class ActivityAdmin(admin.ModelAdmin):
     model = Activity
-    list_display = ['user','project','type']
+    list_display = ['member','project','type']
 
 admin.site.register(Activity, ActivityAdmin)
 admin.site.register(Shot)
 class MemberAdmin(admin.ModelAdmin):
     model = Membership
-    list_display = ['project','user','role', 'is_active']
+    list_display = ['project','profile','role', 'is_active']
 admin.site.register(Membership, MemberAdmin)

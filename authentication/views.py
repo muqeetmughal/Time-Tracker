@@ -1,12 +1,12 @@
 from rest_framework import generics, response, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from authentication.serializers import ProfileSerializer, CreateProfileSerializer
-from authentication.models import Profile
+from authentication.models import Profile, UserAccount
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from authentication.serializers import UserAccountSerializer
+from authentication.serializers import UserAccountSerializer,MeSerializer
 
 
 class SignupView(generics.CreateAPIView):
@@ -41,7 +41,7 @@ class ProfileCreateView(generics.ListCreateAPIView):
         return response.Response(serializer.data)
 
     def perform_create(self, serializer):
-        serializer.save()
+        serializer.save(active=True)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -79,3 +79,12 @@ class LoginView(generics.GenericAPIView):
             })
         else:
             return Response({"detail": "Invalid credentials"}, status=400)
+        
+class MeView(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = MeSerializer
+    
+    def get_queryset(self):
+        return UserAccount.objects.filter().prefetch_related('profiles')
+    def get_object(self):
+        return self.request.user

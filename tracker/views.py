@@ -4,7 +4,8 @@ from rest_framework import generics, viewsets, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
-from django.db.models import F, Q
+from django.db.models import *
+from django.db.models.functions import *
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from tracker.filters import ActivityFilter
@@ -16,6 +17,7 @@ from rest_framework_simplejwt.token_blacklist.models import (
 from rest_framework.decorators import action
 from authentication.models import Profile
 import django_filters.rest_framework as filters
+from rest_framework.exceptions import ValidationError
 
 UserAccount = get_user_model()
 
@@ -30,23 +32,40 @@ class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+
         qs = Project.objects.all()
         if self.action == "list":
-            qs = qs.filter(
-                created_by=self.request.user.profiles.filter(active=True).first()
-            )
+            # qs = qs.filter(
+            #     created_by=self.request.user.profiles.filter(active=True).first()
+            # )
+            qs = qs.select_related("created_by__user")
+            qs = qs.prefetch_related("engagements")
+
+            # qs = qs.filter(
+            #     engagements__profile__user=self.request.user, engagements__is_active=True
+            # ).distinct()
             qs = qs.annotate(
-                admin_profile_name=F("created_by__name"),
-                admin_profile_email=F("created_by__user__email"),
+                created_by_name=F("created_by__name"),
+                created_by_user_email=F("created_by__user__email"),
+                # project_role=F("engagements__role"),
+                members_count=Count(
+                    "engagements__profile",
+                    filter=Q(engagements__is_active=True),
+                    distinct=True,
+                ),
             )
-            qs.prefetch_related("members")
+
+            qs = qs.order_by("-updated_at")
+        # for project in qs:
+        #     print(f"Project: {project.name}, Members Count: {project.members_count}, Created By: {project.created_by__user__email}, Project Role: {project.project_role}")
 
         return qs
 
     def perform_create(self, serializer):
-        serializer.save(
-            created_by=self.request.user.profiles.filter(active=True).first()
-        )
+        profile = self.request.user.profiles.filter(active=True).first()
+        if not profile:
+            raise ValidationError({"detail": "No profile found for account"})
+        serializer.save(created_by=profile)
 
     def send_invites(self):
         # [
@@ -77,16 +96,30 @@ class ActivityViewSet(viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
+        # print(serializer.validated_data)
+
+        # print(project.engagements.filter(profile__user=self.request.user).first())
         if isinstance(serializer.validated_data, list):
             # Bulk create if serializer data is a list
-            activities = [
-                Activity(user=self.request.user, **item)
-                for item in serializer.validated_data
-            ]
-            Activity.objects.bulk_create(activities)
+            activities_to_create = []
+            for activity in serializer.validated_data:
+                membership = (
+                    activity["project"]
+                    .engagements.filter(profile__user=self.request.user)
+                    .first()
+                )
+                activity = Activity(**activity)
+                activity.member = membership
+                activities_to_create.append(activity)
+            Activity.objects.bulk_create(activities_to_create)
         else:
+            membership = (
+                serializer.validated_data["project"]
+                .engagements.filter(profile__user=self.request.user)
+                .first()
+            )
             # Single object creation
-            serializer.save(user=self.request.user)
+            serializer.save(member=membership)
 
     def create(self, request, *args, **kwargs):
         if isinstance(request.data, list):
@@ -100,7 +133,9 @@ class ActivityViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            {"detail": "Activities created successfully"},
+            status=status.HTTP_201_CREATED,
+            headers=headers,
         )
 
 

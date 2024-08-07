@@ -23,7 +23,7 @@ class SoftDeleteManager(models.Manager):
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    archived_at = models.DateTimeField(null=True, blank=True)
+    archived_at = models.DateTimeField(null=True, blank=True,editable=False)
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()

@@ -9,10 +9,12 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
+from datetime import timedelta
 
 import environ
 import os
 
+from pathlib import Path
 import dj_database_url
 from pathlib import Path
 from os import getenv
@@ -21,10 +23,13 @@ from os import getenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# print("Base dir", BASE_DIR)
 env = environ.Env(
     # set casting, default value
-    # DEBUG=(bool, False),
-    ALLOWED_HOSTS=(str, "")
+    DEBUG=(bool, False),
+    ALLOWED_HOSTS=(str, ""),
+    PRODUCTION_DB=(bool,False)
 )
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
@@ -35,7 +40,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = str(env("DEBUG")).lower() == "true"
+DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = str(env("ALLOWED_HOSTS")).split(" ")
 
@@ -56,6 +61,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "tracker",
     "authentication",
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +75,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -108,7 +115,14 @@ WSGI_APPLICATION = "core.wsgi.application"
 #     },
 #   }
 # }
-if str(env("PRODUCTION_DB")).lower() == "true":
+if DEBUG:
+     DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
     DATABASES = {
         "default": dj_database_url.config(
             default=env("DATABASE_URL"),
@@ -116,15 +130,7 @@ if str(env("PRODUCTION_DB")).lower() == "true":
             conn_health_checks=True,
         )
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
-    
-# print(DATABASES)
+
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -158,23 +164,47 @@ USE_TZ = True
 AUTH_USER_MODEL = "authentication.UserAccount"
 
 
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
+# CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
+CORS_ORIGIN_ALLOW_ALL = True
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-MEDIA_URL = "/media/"
-STATIC_URL = "/static/"
+AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_SIGNATURE_NAME = 's3v4',
+AWS_S3_REGION_NAME = env("AWS_S3_REGION_NAME")
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL =  None
+AWS_S3_VERITY = True
+
+if DEBUG:
+    
+    MEDIA_URL = "/media/"
+    STATIC_URL = "/static/"
+else:
+    STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/static/'
+    MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/media/'
+
 STATICFILES_DIRS = [
     # os.path.join(BASE_DIR, "ui/static")
 ]
 # if not DEBUG:    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
 # and renames the files with unique names for each version to support long-term caching
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+
+if  DEBUG:
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+else:
+    DEFAULT_FILE_STORAGE = 'core.storage.MediaStorage'
+
+    STATICFILES_STORAGE = 'core.storage.StaticStorage'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -192,27 +222,15 @@ REST_FRAMEWORK = {
     ),
 }
 
-SIMPLE_JWT = {
-    "AUTH_HEADER_TYPES": ("Bearer",),
-}
 
-from datetime import timedelta
-
-# SIMPLE_JWT = {
-#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=300),
-#     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-#     "ROTATE_REFRESH_TOKENS": False,
-#     "BLACKLIST_AFTER_ROTATION": True,
-#     "UPDATE_LAST_LOGIN": False,
-# }
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=300),
+    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=10),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': False,
+    'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
-    'UPDATE_LAST_LOGIN': False,
+    'UPDATE_LAST_LOGIN': True,
 
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
@@ -237,33 +255,8 @@ SIMPLE_JWT = {
 }
 
 
-from pathlib import Path
-# from dotenv import load_dotenv
-
-# Load environment variables
-# load_dotenv()
-
-# Define the base directory
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
-AWS_S3_SIGNATURE_NAME = 's3v4',
-AWS_S3_REGION_NAME = env("AWS_S3_REGION_NAME")
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL =  None
-AWS_S3_VERITY = True
-
 # DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-DEFAULT_FILE_STORAGE = 'core.storage.MediaStorage'
 
-STATICFILES_STORAGE = 'core.storage.StaticStorage'
-
-
-STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/static/'
-MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/media/'
 
 
 # from storages.backends.s3boto3 import S3Boto3Storage
@@ -283,3 +276,8 @@ MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaw
 #         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage"
 #     },
 # }
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]

@@ -9,9 +9,12 @@ class MemberSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    admin_profile_name = serializers.ReadOnlyField()
-    admin_profile_email = serializers.ReadOnlyField()
-    members = MemberSerializer(many=True, read_only=True)
+    created_by_name = serializers.ReadOnlyField()
+    created_by_user_email = serializers.ReadOnlyField()
+    project_role = serializers.ReadOnlyField()
+    members_count = serializers.ReadOnlyField()
+    
+    engagements = MemberSerializer(many=True, read_only=True)
     class Meta:
         model = Project
         fields = "__all__"
@@ -28,7 +31,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             "screenshot_interval",
             "take_screenshots",
             "archived_at",
-            "admin_profile"
+            "members_count"
+            # "admin_profile"
         ]
         
         # depth = 1
@@ -39,8 +43,8 @@ class ActivitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Activity
-        exclude = ["user", "shots"]
-        read_only_fields = ["id", "user"]
+        exclude = [ "shots"]
+        read_only_fields = ["id","member",]
 
     def validate(self, attrs):
         return super().validate(attrs)

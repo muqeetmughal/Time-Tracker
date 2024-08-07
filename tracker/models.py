@@ -35,6 +35,7 @@ class Project(BaseModel):
         related_name="created_projects",
     )
 
+
     def __str__(self) -> str:
         return self.name
 
@@ -43,20 +44,22 @@ class Membership(BaseModel):
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, null=True, blank=True, related_name="engagements"
     )
-    user = models.ForeignKey(
+    profile = models.ForeignKey(
         "authentication.Profile",
         on_delete=models.PROTECT,
         null=True,
         related_name="team_engagements",
     )
     role = models.CharField(
-        max_length=1, choices=RoleChoices.choices, default=RoleChoices.WORKER
+        max_length=10, choices=RoleChoices.choices, default=RoleChoices.WORKER
     )
     is_active = models.BooleanField(default=False)
-
+    class Meta:
+        
+        unique_together = ('project', 'profile')
     def __str__(self) -> str:
 
-        return f"Membership: {self.user.user.email} of {self.project}"
+        return f"Membership: {self.profile.user.email} of {self.project}"
 
 
 class Invitation(BaseModel):
@@ -74,7 +77,7 @@ class Invitation(BaseModel):
         related_name="sent_invitations",
     )
     role = models.CharField(
-        max_length=1, choices=RoleChoices.choices, default=RoleChoices.WORKER
+        max_length=10, choices=RoleChoices.choices, default=RoleChoices.WORKER
     )
     ### if client wants to invite a user on specfic rate
     rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -87,19 +90,19 @@ class Invitation(BaseModel):
 #     member = models.ForeignKey(Membership, on_delete=models.CASCADE)
 
 class Activity(BaseModel):
-    user = models.ForeignKey(Membership, on_delete=models.SET_NULL, null=True)
+    member = models.ForeignKey(Membership, on_delete=models.SET_NULL, null=True)
     project = models.ForeignKey(Project, on_delete=models.PROTECT)
     description = models.TextField(blank=True, null=True)
-    start_date = models.DateField()
-    work_from = models.TimeField()
-    work_to = models.TimeField()
+    # start_date = models.DateField()
+    work_from = models.DateTimeField()
+    work_to = models.DateTimeField()
     type = models.CharField(max_length=1, choices=ActivityType.choices)
     keyboard_event_counts = models.PositiveIntegerField(default=0, blank=True)
     mouse_event_counts = models.PositiveIntegerField(default=0, blank=True)
     shots = models.ManyToManyField("Shot", blank=True)
 
-    def __str__(self) -> str:
-        return f"Activity by {self.user.user.user.email} on {self.project.name}"
+    # def __str__(self) -> str:
+    #     return f"Activity by {self.user.user.user.email} on {self.project.name}"
 
 
 class Shot(BaseModel):
@@ -122,10 +125,11 @@ class Shot(BaseModel):
 @receiver(post_save, sender=Project)
 def create_member_for_project(sender, instance, created, **kwargs):
     if created:
+        
         # Assuming the creator of the project is the initial member
         Membership.objects.create(
             project=instance,
-            user=instance.created_by,
+            profile=instance.created_by,
             role=RoleChoices.ADMIN,
             is_active=True,
         )
