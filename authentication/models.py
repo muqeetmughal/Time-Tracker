@@ -12,7 +12,7 @@ from common.models import BaseModel
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db.models import F
-
+import pytz
 
 UserAccount = settings.AUTH_USER_MODEL
 
@@ -30,10 +30,25 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     # -----additional added
     # phone = models.CharField(max_length=20)
     # allow_web_login = models.BooleanField(default=True)
+    
+    #------------add new ---------------
+    class Role(models.TextChoices):
+        ADMIN = 'admin', 'Admin'
+        PROJECT_MANAGER = 'project_manager', 'Project Manager'
+        EMPLOYEE = 'employee', 'Employee'
+        FREELANCER = 'freelancer', 'Freelancer'
+
+    role = models.CharField(
+        max_length=20,
+        choices=Role.choices,
+        default=Role.EMPLOYEE,  # Optional: Set a default role
+    )
+    
     full_name = models.CharField(max_length=50, blank=True, null=True)
     country = models.CharField(max_length=50, blank=True, null=True)
     city = models.CharField(max_length=50, blank=True, null=True)
-    time_zone = models.CharField(max_length=6, choices=TimeZoneChoices.choices)
+    time_zone = models.CharField(max_length=63,  choices=[(tz, tz) for tz in pytz.all_timezones],
+        default=pytz.UTC.zone)
     # -----additional added
     # is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -55,30 +70,35 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     def clean(self):
         email_validator(self.email)
 
-class Profile(BaseModel):
-    USER_TYPES = (
-        ("freelancer", "Freelancer"),
-        ("client", "Client"),
-    )
-    
-    image = models.ImageField(upload_to="profile_images",null=True, blank=True)
-    
-    name = models.CharField(max_length=255,null=True, blank=True)
-    company_name = models.CharField(max_length=255, null=True, blank=True)
-    phone = models.CharField(max_length=20, null=True, blank=True)
-    address = models.TextField(null=True, blank=True)
 
-    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name="profiles")
-    type = models.CharField(max_length=10, choices=USER_TYPES)
-    active = models.BooleanField(default=False)
-    class Meta:
-        unique_together = ("user", "type")
 
-    def __str__(self):
-        return f"{self.user.email} ({self.get_type_display()})"
+
+
+
+# class Profile(BaseModel):
+#     USER_TYPES = (
+#         ("freelancer", "Freelancer"),
+#         ("client", "Client"),
+#     )
+    
+#     image = models.ImageField(upload_to="profile_images",null=True, blank=True)
+    
+#     name = models.CharField(max_length=255,null=True, blank=True)
+#     company_name = models.CharField(max_length=255, null=True, blank=True)
+#     phone = models.CharField(max_length=20, null=True, blank=True)
+#     address = models.TextField(null=True, blank=True)
+
+#     user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name="profiles")
+#     type = models.CharField(max_length=10, choices=USER_TYPES)
+#     active = models.BooleanField(default=False)
+#     class Meta:
+#         unique_together = ("user", "type")
+
+#     def __str__(self):
+#         return f"{self.user.email} ({self.get_type_display()})"
     
     
-@receiver(post_save, sender=Profile)
-def ensure_single_active_profile(sender, instance, created, **kwargs):
-    if instance.active or not instance.active:
-        Profile.objects.filter(user=instance.user).exclude(pk=instance.pk).update(active=~F('active'))
+# @receiver(post_save, sender=Profile)
+# def ensure_single_active_profile(sender, instance, created, **kwargs):
+#     if instance.active or not instance.active:
+#         Profile.objects.filter(user=instance.user).exclude(pk=instance.pk).update(active=~F('active'))

@@ -1,0 +1,32 @@
+{% extends '_base.html' %}
+
+{% block content %}
+<div class="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <h1 class="text-center text-2xl font-extrabold text-gray-900">
+            Confirm Delete
+        </h1>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <p class="text-center text-lg text-gray-700">
+                Are you sure you want to delete the organization "{{ object.name }}"?
+            </p>
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <div class="flex justify-center space-x-4">
+                    <button type="submit"
+                        class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        Delete
+                    </button>
+                    <a href="{% url 'organization_list' %}" 
+                       class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

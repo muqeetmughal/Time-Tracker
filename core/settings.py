@@ -62,6 +62,10 @@ INSTALLED_APPS = [
     "tracker",
     "authentication",
     'debug_toolbar',
+    'frontend',
+    'compressor',  # new
+     "crispy_forms",
+    "crispy_tailwind",
 ]
 
 MIDDLEWARE = [
@@ -83,7 +87,7 @@ ROOT_URLCONF = "core.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+       'DIRS': [BASE_DIR / 'templates'], # new
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -181,16 +185,12 @@ AWS_DEFAULT_ACL =  None
 AWS_S3_VERITY = True
 
 if DEBUG:
-    
     MEDIA_URL = "/media/"
     STATIC_URL = "/static/"
 else:
     STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/static/'
     MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/media/'
 
-STATICFILES_DIRS = [
-    # os.path.join(BASE_DIR, "ui/static")
-]
 # if not DEBUG:    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
@@ -205,7 +205,9 @@ else:
 
     STATICFILES_STORAGE = 'core.storage.StaticStorage'
 
-
+STATICFILES_DIRS = [    
+                    os.path.join(BASE_DIR, "assets")
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -281,3 +283,19 @@ INTERNAL_IPS = [
     "127.0.0.1",
     # ...
 ]
+
+COMPRESS_ROOT = BASE_DIR / 'assets'
+
+COMPRESS_ENABLED = True
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    # other finders..
+    'compressor.finders.CompressorFinder',
+)
+
+LOGIN_URL = "/auth/login"
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
+
+CRISPY_TEMPLATE_PACK = "tailwind"

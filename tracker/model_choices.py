@@ -1,5 +1,4 @@
 from django.db import models
-
 class ShotTypeChoices(models.TextChoices):
         SCREENSHOT = "s" , "Screenshot"
         WEB_CAM = "w" , "Web Cam"

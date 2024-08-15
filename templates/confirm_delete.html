@@ -1,0 +1,23 @@
+{% extends 'dashboard.html' %}
+
+{% block content %}
+<div class="container mx-auto p-6 max-w-3xl">
+    <h2 class="text-3xl font-semibold text-gray-900 mb-6">Confirm User Deletion</h2>
+
+    <div class="bg-white shadow-lg rounded-lg border border-gray-300 p-8">
+        <p class="text-red-600 font-semibold mb-6">Are you sure you want to delete the account for {{ user.email }}?</p>
+
+        <form method="post" action="{% url 'user_delete' pk=user.id %}">
+            {% csrf_token %}
+            <div class="flex justify-between">
+                <a href="{% url 'profile' %}" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition ease-in-out duration-300">
+                    Cancel
+                </a>
+                <button type="submit" name="confirm" value="true" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition ease-in-out duration-300">
+                    Confirm Delete
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

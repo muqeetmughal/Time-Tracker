@@ -1,5 +1,5 @@
 from django.contrib import admin
-from authentication.models import UserAccount, Profile
+from authentication.models import UserAccount #, Profile
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from authentication.forms import CustomUserCreationForm, CustomUserChangeForm
@@ -31,7 +31,12 @@ class CustomUserAdmin(UserAdmin):
 
 
 admin.site.register(UserAccount, CustomUserAdmin)
-class ProfileAdmin(admin.ModelAdmin):
-    model = Profile
-    list_display = ['user', 'type', 'active']
-admin.site.register(Profile,ProfileAdmin)
+
+
+
+    
+    
+# class ProfileAdmin(admin.ModelAdmin):
+#     model = Profile
+#     list_display = ['user', 'type', 'active']
+# admin.site.register(Profile,ProfileAdmin)
