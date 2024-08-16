@@ -41,14 +41,13 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(
         max_length=20,
         choices=Role.choices,
-        default=Role.EMPLOYEE,  # Optional: Set a default role
+        default=Role.FREELANCER,  # Optional: Set a default role
     )
     
     full_name = models.CharField(max_length=50, blank=True, null=True)
     country = models.CharField(max_length=50, blank=True, null=True)
     city = models.CharField(max_length=50, blank=True, null=True)
-    time_zone = models.CharField(max_length=63,  choices=[(tz, tz) for tz in pytz.all_timezones],
-        default=pytz.UTC.zone)
+    time_zone = models.CharField(max_length=63,  choices=[(tz, tz) for tz in pytz.all_timezones], default=pytz.UTC.zone)
     # -----additional added
     # is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)

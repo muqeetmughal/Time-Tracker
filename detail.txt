@@ -1,0 +1,6 @@
+project member ik seprate model ha 
+user jb project create kry ga tu wo auto us ka member bn jaey ga 
+
+project membership ki row khud he bn jaey gi
+user ko wo project show hon gy jin me wo member ho ga 
+or orgnization create krty waqat us ko members show nhi krwany by defaul wo us ka member ho ga 

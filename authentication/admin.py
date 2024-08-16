@@ -2,14 +2,14 @@ from django.contrib import admin
 from authentication.models import UserAccount #, Profile
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from authentication.forms import CustomUserCreationForm, CustomUserChangeForm
+from authentication.forms import CustomUserChangeForm, SignupForm #, CustomUserCreationForm
 
 
 class CustomUserAdmin(UserAdmin):
-    add_form = CustomUserCreationForm
+    add_form = SignupForm
     form = CustomUserChangeForm
     model = UserAccount
-    list_display = ("email", "is_staff", "is_active",)
+    list_display = ("id", "email", "is_staff", "is_active",)
     list_filter = ("email", "is_staff", "is_active",)
     fieldsets = (
         ('User Credentials', {'fields': ('email', 'password')}),

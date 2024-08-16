@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework import generics, response, status
+from tracker.models import *
 from rest_framework.permissions import AllowAny, IsAuthenticated
 # from authentication.serializers import ProfileSerializer, CreateProfileSerializer
 from authentication.models import UserAccount #, Profile
@@ -9,7 +10,7 @@ from rest_framework import generics
 from django.http import HttpResponseForbidden
 from django.contrib import messages
 from django.urls import reverse_lazy
-from .forms import CustomUserCreationForm, CustomUserChangeForm
+from .forms import CustomUserChangeForm, SignupForm # , CustomUserCreationForm
 from django.contrib.auth.decorators import login_required
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -19,20 +20,21 @@ from authentication.serializers import UserAccountSerializer #,MeSerializer
 
 def signup_view(request):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
+        form = SignupForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Your account has been created successfully!")
-            return redirect('login')  # Redirect to the homepage or dashboard after signup
+            return redirect('login')  
         else:
             messages.error(request, "There was an error with your submission.")
     else:
-        form = CustomUserCreationForm()
+        form = SignupForm()
 
     return render(request, 'signup.html', {'form': form})
     
     
 def login_view(request):
+
     if request.user.is_authenticated:
         return redirect('profile')
  
@@ -41,12 +43,11 @@ def login_view(request):
         password = request.POST.get('password')
         user = authenticate(email=email, password=password)
         if user is not None:
-            if user.is_superuser:
+            if user.is_superuser: 
                 return HttpResponseNotFound("Page not found.")
             login(request, user)
-            return redirect('profile')  # Redirect to the profile/dashboard
+            return redirect('profile')  
         else:
-            # Handle invalid login attempt
             return render(request, 'login.html', {'error': 'Invalid credentials'})
     
     return render(request, 'login.html')
@@ -54,9 +55,13 @@ def login_view(request):
 
 @login_required(login_url="/login/")
 def dashboard_view(request):
-    if request.user.is_superuser:
-        return HttpResponseNotFound("Page not found.")
-    return render(request, 'dashboard.html', {'user': request.user})
+    orgnization = Organization.objects.filter(owner = request.user)
+    if len(orgnization) >0:
+        if request.user.is_superuser:
+            return HttpResponseNotFound("Page not found.")
+        return render(request, 'dashboard.html', {'user': request.user})
+    
+    return redirect('organization_create')
 
 
 def user_logout(request):
@@ -68,15 +73,31 @@ def user_logout(request):
 
 @login_required(login_url="/login/")
 def user_list_view(request):
+    orgnization = Organization.objects.filter(owner = request.user)
+    
     if request.user.is_superuser:
         return HttpResponseNotFound("Page not found.")
-    users = UserAccount.objects.filter(is_superuser=False)
-    return render(request, 'users.html', {'users': users})
+    else:
+        if len(orgnization)>0:
+            users = UserAccount.objects.filter(is_superuser=False)
+            return render(request, 'users.html', {'users': users})
+        else:
+            users = UserAccount.objects.filter(id = request.user.id)
+            return render(request, 'users.html', {'users': users})
+    
+
+    # if request.user.is_superuser:
+    #     return HttpResponseNotFound("Page not found.")
+    # users = UserAccount.objects.filter(is_superuser=False)
+    # return render(request, 'users.html', {'users': users})
+    
+        
 
 
 
 @login_required
 def update_user(request, pk):
+
     user = get_object_or_404(UserAccount, pk=pk)
     if request.user.id != user.id:
         return redirect('user_list')  
@@ -97,17 +118,18 @@ def update_user(request, pk):
 
 @login_required
 def delete_user(request, pk):
+
     user = get_object_or_404(UserAccount, pk=pk)
     
     if request.user.id != user.id:
-        return redirect('user_list') 
+        # return redirect('user_list') 
+        return HttpResponseForbidden()
     
-    if request.method == 'POST' and 'confirm' in request.POST:
+    if request.method == 'POST' :#  and 'confirm' in request.POST
         user.delete()
         return redirect('login') 
     
     return render(request, 'confirm_delete.html', {'user': user})
-
 
 
 

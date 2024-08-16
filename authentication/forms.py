@@ -1,11 +1,13 @@
 import email
+from enum import unique
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from authentication.models import UserAccount
+from django.db import transaction
 from tracker.models import Organization
 from django import forms
 
-class CustomUserCreationForm(UserCreationForm):
-
+class SignupForm(UserCreationForm):
+    # orgnization_name = forms.CharField(max_length=50, required=True)
     class Meta:
         model = UserAccount
         fields = [
@@ -15,24 +17,26 @@ class CustomUserCreationForm(UserCreationForm):
             'country',
             'city',
             'time_zone',
-            'password1',  # Password1 is required for UserCreationForm
-            'password2',  # Password2 is for password confirmation
+            'password1', 
+            'password2', 
         ]
+    
         
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        if commit:
-            user.save()
-            # Create an Organization for the new user
-            Organization.objects.create(owner=user, name=user.email)
-        return user
- 
+    # def save(self, commit=True):
+    #     with transaction.atomic():
+    #         user = super().save(commit=False)
+    #         if commit:
+    #             user.save()
+    #             Organization.objects.create(owner=user, name=orgnization_name)
+    #         return user
+    
+        
 
         
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = UserAccount
-        fields = ('email', 'role', 'full_name', 'country', 'city', 'time_zone')
+        fields = ('email', 'full_name', 'country', 'city', 'time_zone')
 
     def clean_email(self):
         email = self.cleaned_data.get('email')

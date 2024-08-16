@@ -27,13 +27,16 @@ UserAccount = get_user_model()
 
 
 
-#----------------------------------Orgnizations View--------------------------------------------
+#----------------------------------Orgnizations--------------------------------------------
 
 
 @login_required
 def organization_list(request):
-    organizations = Organization.objects.all()
-    return render(request, 'orgnization/organization_list.html', {'organizations': organizations})
+    orgnization = Organization.objects.filter(owner = request.user)
+    if len(orgnization) >0:
+        organizations = Organization.objects.all()
+        return render(request, 'orgnization/organization_list.html', {'organizations': organizations})
+    return redirect('organization_create')
 
 
 @login_required
@@ -53,33 +56,40 @@ def organization_create(request):
 
 @login_required
 def organization_update(request, pk):
-    organization = get_object_or_404(Organization, pk=pk)
-
-    if request.user != organization.owner:
-        return HttpResponseForbidden()
-    if request.method == 'POST':
-        form = OrganizationForm(request.POST, instance=organization)
-        if form.is_valid():
-            form.save()
-            return redirect('organization_list')
-    else:
-        form = OrganizationForm(instance=organization)
-    return render(request, 'orgnization/organization_form.html', {'form': form})
+    orgnisation = Organization.objects.filter(owner = request.user)
+    if len(orgnisation) >0:
+        
+        organization = get_object_or_404(Organization, pk=pk)
+        if request.user != organization.owner:
+            return HttpResponseForbidden()
+        if request.method == 'POST':
+            form = OrganizationForm(request.POST, instance=organization)
+            if form.is_valid():
+                form.save()
+                return redirect('organization_list')
+        else:
+            form = OrganizationForm(instance=organization)
+        return render(request, 'orgnization/organization_form.html', {'form': form})
+    
+    return redirect('user_list')
 
 
 
 @login_required
 def organization_delete(request, pk):
-    organization = get_object_or_404(Organization, pk=pk)
-    if request.user != organization.owner:
-        return HttpResponseForbidden()
+    orgnisation = Organization.objects.filter(owner = request.user)
+    if len(orgnisation) >0:
+        
+        organization = get_object_or_404(Organization, pk=pk)
+        if request.user != organization.owner:
+            return HttpResponseForbidden()
+        if request.method == 'POST':
+            organization.delete()
+            return redirect('organization_list')
 
-    if request.method == 'POST':
-        organization.delete()
-        return redirect('organization_list')
-
-    return render(request, 'orgnization/organization_confirm_delete.html', {'object': organization})
-
+        return render(request, 'orgnization/organization_confirm_delete.html', {'object': organization})
+    
+    return redirect('user_list')
 
 
 

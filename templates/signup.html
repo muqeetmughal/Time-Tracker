@@ -21,99 +21,6 @@
 
                 {{form|crispy}}
 
-                {% comment %} <!-- Email Field -->
-                <div class="relative z-0 w-full mb-5 group">
-                    <input id="email" name="email" type="email" autocomplete="email" required
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                        placeholder=" " value="{{ form.email.value|default:'' }}" />
-                    <label for="email" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Email address</label>
-                    {% if form.email.errors %}
-                        <p class="text-red-600 text-sm">{{ form.email.errors }}</p>
-                    {% endif %}
-                </div>
-
-                <!-- Role Field -->
-                <div class="relative z-0 w-full mb-5 group">
-                    <select id="role" name="role" required
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer">
-                        {% for key, value in form.role.field.choices %}
-                        <option value="{{ key }}" {% if form.role.value == key %}selected{% endif %}>{{ value }}</option>
-                        {% endfor %}
-                    </select>
-                    <label for="role" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Role</label>
-                    {% if form.role.errors %}
-                        <p class="text-red-600 text-sm">{{ form.role.errors }}</p>
-                    {% endif %}
-                </div>
-
-                <!-- Full Name Field -->
-                <div class="relative z-0 w-full mb-5 group">
-                    <input id="full_name" name="full_name" type="text" required
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                        placeholder=" " value="{{ form.full_name.value|default:'' }}" />
-                    <label for="full_name" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Full Name</label>
-                    {% if form.full_name.errors %}
-                        <p class="text-red-600 text-sm">{{ form.full_name.errors }}</p>
-                    {% endif %}
-                </div>
-
-                <!-- Country Field -->
-                <div class="relative z-0 w-full mb-5 group">
-                    <input id="country" name="country" type="text" required
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                        placeholder=" " value="{{ form.country.value|default:'' }}" />
-                    <label for="country" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Country</label>
-                    {% if form.country.errors %}
-                        <p class="text-red-600 text-sm">{{ form.country.errors }}</p>
-                    {% endif %}
-                </div>
-
-                <!-- City Field -->
-                <div class="relative z-0 w-full mb-5 group">
-                    <input id="city" name="city" type="text" required
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                        placeholder=" " value="{{ form.city.value|default:'' }}" />
-                    <label for="city" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">City</label>
-                    {% if form.city.errors %}
-                        <p class="text-red-600 text-sm">{{ form.city.errors }}</p>
-                    {% endif %}
-                </div>
-
-                <!-- Time Zone Field -->
-                <div class="relative z-0 w-full mb-5 group">
-                    <select id="time_zone" name="time_zone" required
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer">
-                        {% for key, value in form.time_zone.field.choices %}
-                        <option value="{{ key }}" {% if form.time_zone.value == key %}selected{% endif %}>{{ value }}</option>
-                        {% endfor %}
-                    </select>
-                    <label for="time_zone" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Time Zone</label>
-                    {% if form.time_zone.errors %}
-                        <p class="text-red-600 text-sm">{{ form.time_zone.errors }}</p>
-                    {% endif %}
-                </div>
-
-                <!-- Password1 Field (Only shown for signup) -->
-                {% if not form.instance.pk %}
-                <div class="relative z-0 w-full mb-5 group">
-                    <input id="password1" name="password1" type="password" autocomplete="new-password" required
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                        placeholder=" " />
-                    <label for="password1" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Password</label>
-                </div>
-                {% endif %}
-
-                <!-- Password2 Field (Only shown for signup) -->
-                {% if not form.instance.pk %}
-                <div class="relative z-0 w-full mb-5 group">
-                    <input id="password2" name="password2" type="password" autocomplete="new-password" required
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                        placeholder=" " />
-                    <label for="password2" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Confirm Password</label>
-                </div>
-                {% endif %} {% endcomment %}
-
-                <!-- Submit Button -->
                 <div class="flex items-center justify-end">
                     <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         {% if form.instance.pk %}
@@ -123,6 +30,7 @@
                         {% endif %}
                     </button>
                 </div>
+                
             </form>
         </div>
     </div>
