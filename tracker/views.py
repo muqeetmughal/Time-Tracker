@@ -34,7 +34,7 @@ UserAccount = get_user_model()
 def organization_list(request):
     orgnization = Organization.objects.filter(owner = request.user)
     if len(orgnization) >0:
-        organizations = Organization.objects.all()
+        organizations = Organization.objects.filter(owner = request.user)
         return render(request, 'orgnization/organization_list.html', {'organizations': organizations})
     return redirect('organization_create')
 
@@ -104,41 +104,86 @@ def project_list(request):
     return render(request, 'project/project_list.html', {'projects': projects})
 
 
-
 @login_required
 def project_create(request):
     if request.method == 'POST':
-        form = ProjectForm(request.POST)
+        # form = ProjectForm(request.POST)
+        form = ProjectForm(request.POST, user=request.user)
         if form.is_valid():
             project = form.save()
+            ProjectMember.objects.create(user=request.user, project=project)
             return redirect('project_list')
     else:
-        form = ProjectForm()
+        form = ProjectForm(user=request.user)
     return render( request, 'project/project_form.html', {'form': form})
 
 
 
+@login_required
+def project_update(request, pk=None):
+        
+    project = get_object_or_404(Project, pk=pk)
+    if request.method == 'POST':
+        form = ProjectForm(request.POST, instance=project, user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('project_list')
+    else:
+        form = ProjectForm(instance=project, user=request.user)
+    return render(request, 'project/project_form.html', {'form': form})
+    
+
+# @login_required
+# def add_member(request, pk):
+#     project = get_object_or_404(Project, pk=pk)
+    
+#     if request.method == 'POST':
+#         form = AddMembersForm(request.POST)
+#         if form.is_valid():
+#             users = form.cleaned_data['users']
+#             for user in users:
+#                 ProjectMember.objects.get_or_create(user=user, project=project)
+#             return redirect('project_list')
+#     else:
+#         form = AddMembersForm()
+#     return render(request, 'project/add_member.html', {'form': form, 'project': project})
+
+@login_required
+def add_member(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    
+    if request.method == 'POST':
+        form = AddMembersForm(request.POST, project=project)
+        if form.is_valid():
+            users = form.cleaned_data['users']
+            for user in users:
+                ProjectMember.objects.get_or_create(user=user, project=project)
+            return redirect('project_list')
+    else:
+        form = AddMembersForm(project=project)
+    
+    return render(request, 'project/add_member.html', {'form': form, 'project': project})
 
 
 
 
+@login_required
+def archived_project_list(request):
+    
+    projects = Project.all_objects.filter(projectmember__user = request.user, is_deleted=True)
+    return render(request, 'project/archived_project_list.html', {'projects': projects})
 
 
+@login_required
+def project_delete(request, pk):
 
+    project = get_object_or_404(Project, pk=pk)
+    if request.method == 'POST':
+        project.soft_delete()
+        return redirect('project_list')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return render(request, 'project/project_confirm_delete.html', {'object': project})
+    
 
 
 

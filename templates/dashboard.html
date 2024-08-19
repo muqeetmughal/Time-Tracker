@@ -1,14 +1,17 @@
 {% extends "_base.html" %}
 
+
 {% block content %}
 {% include "includes/navbar.html" %}
 {% include "includes/sidebar.html" %}
-<div class="p-4 sm:ml-64">
-  <div class="p-4  dark:border-gray-700 mt-14">
+
+
+{% comment %} <div class="p-4 sm:ml-64">
+  <div class="p-4  dark:border-gray-700 mt-14"> {% endcomment %}
     {% block inner_content %}
             <!-- Content from other files will go here -->
     {% endblock inner_content %}
-  </div>
-</div> 
+  {% comment %} </div>
+</div>  {% endcomment %}
 
 {% endblock content %}

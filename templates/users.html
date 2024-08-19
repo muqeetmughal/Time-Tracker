@@ -1,55 +1,59 @@
-{% extends 'dashboard.html' %}
+{% extends '_base.html' %}
 
-{% block inner_content %}
-<div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-        <caption class="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white dark:text-white dark:bg-gray-800">
-            User Management
-        </caption>
-        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-                <th scope="col" class="px-6 py-3">
-                    Name
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Email
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Actions
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in users %}
-                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        {{ user.full_name }}
-                    </th>
-                    <td class="px-6 py-4">
-                        {{ user.email }}
-                    </td>
-                    <td class="px-6 py-4">
-                        {% if user.id == request.user.id %}
-                            <a href="{% url 'user_update' pk=user.id %}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-4">
-                                Edit
-                            </a>
+{% block content %}
 
-                            <form action="{% url 'user_delete' pk=user.id %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                                {% csrf_token %}
-                                <button type="submit" class="font-medium text-red-700 dark:text-red-600 hover:underline">
-                                    Delete
-                                </button>
-                            </form>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+<div class="p-4 sm:ml-64">
+    <div class="p-4  dark:border-gray-700 mt-14">
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <caption class="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white dark:text-white dark:bg-gray-800">
+                    User Management
+                </caption>
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">
+                            Name
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Email
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                {{ user.full_name }}
+                            </th>
+                            <td class="px-6 py-4">
+                                {{ user.email }}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if user.id == request.user.id %}
+                                    <a href="{% url 'user_update' pk=user.id %}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-4">
+                                        Edit
+                                    </a>
+
+                                    <form action="{% url 'user_delete' pk=user.id %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="font-medium text-red-700 dark:text-red-600 hover:underline">
+                                            Delete
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
 
+    </div>
+</div> 
 
 
-
-{% endblock inner_content %}
+{% endblock content %}

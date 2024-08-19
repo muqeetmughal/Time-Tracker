@@ -14,6 +14,33 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 
 
+
+class NonDeleted(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted = False)
+    
+class SoftDelete(models.Model):
+    is_deleted = models.BooleanField(default=False)
+    
+    objects = NonDeleted()
+    all_objects = models.Manager() 
+    
+    def soft_delete(self):
+        self.is_deleted = True 
+        self.save()
+        
+    def restore(self):
+        self.is_deleted = False
+        self.save()
+    
+    class Meta:
+        abstract = True
+        
+        
+
+    
+
+
 class Organization(models.Model):
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -32,7 +59,7 @@ class OrganizationMembership(models.Model):
 
 
 
-class Project(models.Model):
+class Project(SoftDelete):
     name = models.CharField(max_length=255)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -43,13 +70,8 @@ class Project(models.Model):
         return self.name
     
     def save(self, *args, **kwargs):
-        # Get the user who is creating the project from kwargs
         user = kwargs.pop('user', None)
-
-        # Save the project
         super().save(*args, **kwargs)
-
-        # Create a ProjectMember object if user is provided
         if user:
             ProjectMember.objects.get_or_create(user=user, project=self)
     

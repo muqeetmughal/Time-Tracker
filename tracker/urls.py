@@ -26,9 +26,12 @@ urlpatterns = [
     
     path('projects/', project_list, name='project_list'),
     path('project/create/', project_create, name='project_create'),
-    # path('organizations/<int:pk>/update/', organization_update, name='organization_update'),
-    # path('organizations/<int:pk>/delete/', organization_delete, name='organization_delete'),
+    path('project/<int:pk>/update/', project_update, name='project_update'),
+    path('projects/<int:pk>/delete/', project_delete, name='project_delete'),
     
+    path('archived_projects/', archived_project_list, name='archived_project_list'),
     
+    # path('add/member/', add_member, name='add_member'),
+    path('projects/<int:pk>/members/', add_member, name='add_member'),
 ] 
 urlpatterns += router.urls

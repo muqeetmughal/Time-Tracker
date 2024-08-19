@@ -18,12 +18,13 @@
 </head>
 
 <body>
-    {% comment %} {% if request.user.is_authenticated%}
+    {% if request.user.is_authenticated%}
 
     {% include "includes/navbar.html" %}
     {% include "includes/sidebar.html" %} 
 
-    {% endif %}  {% endcomment %}
+    {% endif %} 
+
     {% block content %}
     
     {% endblock content %}
