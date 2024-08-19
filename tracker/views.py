@@ -47,6 +47,8 @@ def organization_create(request):
             organization = form.save(commit=False)
             organization.owner = request.user
             organization.save()
+            organization.members.add(request.user)
+            
             return redirect('organization_list')
     else:
         form = OrganizationForm()
@@ -90,6 +92,122 @@ def organization_delete(request, pk):
         return render(request, 'orgnization/organization_confirm_delete.html', {'object': organization})
     
     return redirect('user_list')
+
+
+
+#----------------------------------Projects--------------------------------------------
+
+
+@login_required
+def project_list(request):
+    projects = Project.objects.filter(projectmember__user = request.user)
+    return render(request, 'project/project_list.html', {'projects': projects})
+
+
+
+@login_required
+def project_create(request):
+    if request.method == 'POST':
+        form = ProjectForm(request.POST)
+        if form.is_valid():
+            project = form.save()
+            return redirect('project_list')
+    else:
+        form = ProjectForm()
+    return render( request, 'project/project_form.html', {'form': form})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

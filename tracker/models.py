@@ -41,6 +41,18 @@ class Project(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        # Get the user who is creating the project from kwargs
+        user = kwargs.pop('user', None)
+
+        # Save the project
+        super().save(*args, **kwargs)
+
+        # Create a ProjectMember object if user is provided
+        if user:
+            ProjectMember.objects.get_or_create(user=user, project=self)
+    
 
 
 class ProjectMember(models.Model):

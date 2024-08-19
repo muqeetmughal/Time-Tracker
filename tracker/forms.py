@@ -5,7 +5,7 @@ from .models import OrganizationMembership, Project, Organization
 class OrganizationForm(forms.ModelForm):
     class Meta:
         model = Organization
-        fields = ['name', 'members']  
+        fields = ['name']  
 
 
 
@@ -13,6 +13,7 @@ class OrganizationMembershipForm(forms.ModelForm):
     class Meta:
         model = OrganizationMembership
         fields = ['user', 'organization', 'is_admin']
+
 
 
 class ProjectForm(forms.ModelForm):
