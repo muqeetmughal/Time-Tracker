@@ -64,8 +64,10 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'frontend',
     'compressor',  # new
-     "crispy_forms",
+    "crispy_forms",
     "crispy_tailwind",
+    'django_select2',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [

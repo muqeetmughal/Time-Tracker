@@ -1,9 +1,8 @@
 {% extends "_base.html" %}
 
 {% block content %}
-
 <div class="p-4 sm:ml-64">
-    <div class="p-4  dark:border-gray-700 mt-14">
+    <div class="p-4 dark:border-gray-700 mt-14">
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
             <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                 <caption class="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white dark:text-white dark:bg-gray-800">
@@ -23,6 +22,9 @@
                         <th scope="col" class="px-6 py-3">
                             Project Name
                         </th>
+                        <th scope="col" class="px-6 py-3">
+                            Actions
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,12 +33,28 @@
                             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                 {{ project.name }}
                             </th>
+
+                            <td class="px-6 py-4">
+                                <form action="{% url 'project_restore' pk=project.id %}" method="post" style="display:inline;" id="restore-form-{{ project.id }}">
+                                    {% csrf_token %}
+                                    <a href="#" onclick="confirmRestore({{ project.id }}); return false;" class="text-green-600 hover:text-green-700">
+                                        Restore
+                                    </a>
+                                </form>
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-
     </div>
 </div> 
+
+<script>
+    function confirmRestore(projectId) {
+        if (confirm('Are you sure you want to restore this project?')) {
+            document.getElementById('restore-form-' + projectId).submit();
+        }
+    }
+    </script>
 {% endblock content %}

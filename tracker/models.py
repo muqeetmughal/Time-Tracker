@@ -38,8 +38,6 @@ class SoftDelete(models.Model):
         
         
 
-    
-
 
 class Organization(models.Model):
     name = models.CharField(max_length=255)
@@ -79,7 +77,7 @@ class Project(SoftDelete):
 
 class ProjectMember(models.Model):
     user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='members')
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

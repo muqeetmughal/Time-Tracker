@@ -29,9 +29,13 @@ urlpatterns = [
     path('project/<int:pk>/update/', project_update, name='project_update'),
     path('projects/<int:pk>/delete/', project_delete, name='project_delete'),
     
+    path('project/<int:pk>/restore/', project_restore, name='project_restore'),# 
+    
     path('archived_projects/', archived_project_list, name='archived_project_list'),
     
-    # path('add/member/', add_member, name='add_member'),
     path('projects/<int:pk>/members/', add_member, name='add_member'),
+    
+    path('select2/', include('django_select2.urls')),
+    
 ] 
 urlpatterns += router.urls

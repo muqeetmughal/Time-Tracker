@@ -14,7 +14,7 @@ class OrganizationAdmin(admin.ModelAdmin):
     
 class ProjectAdmin(admin.ModelAdmin):
     model = Project
-    list_display = ['name', 'organization', 'created_at']
+    list_display = ['id','name', 'organization', 'created_at']
 
 admin.site.register(Project, ProjectAdmin)
 

@@ -12,6 +12,7 @@ from django.db.models import *
 from django.db.models.functions import *
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
+from django.http import Http404
 # from tracker.filters import ActivityFilter
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.token_blacklist.models import (
@@ -32,9 +33,9 @@ UserAccount = get_user_model()
 
 @login_required
 def organization_list(request):
-    orgnization = Organization.objects.filter(owner = request.user)
+    orgnization = Organization.objects.select_related('owner').prefetch_related('members').filter(owner = request.user)
     if len(orgnization) >0:
-        organizations = Organization.objects.filter(owner = request.user)
+        organizations = Organization.objects.select_related('owner').prefetch_related('members').filter(owner = request.user)
         return render(request, 'orgnization/organization_list.html', {'organizations': organizations})
     return redirect('organization_create')
 
@@ -58,10 +59,11 @@ def organization_create(request):
 
 @login_required
 def organization_update(request, pk):
-    orgnisation = Organization.objects.filter(owner = request.user)
+    orgnisation = Organization.objects.select_related('owner').prefetch_related('members').filter(owner = request.user)
     if len(orgnisation) >0:
         
-        organization = get_object_or_404(Organization, pk=pk)
+        # organization = get_object_or_404(Organization, pk=pk)
+        organization = get_object_or_404(Organization.objects.select_related('owner'), pk=pk)
         if request.user != organization.owner:
             return HttpResponseForbidden()
         if request.method == 'POST':
@@ -79,10 +81,11 @@ def organization_update(request, pk):
 
 @login_required
 def organization_delete(request, pk):
-    orgnisation = Organization.objects.filter(owner = request.user)
+    orgnisation = Organization.objects.select_related('owner').prefetch_related('members').filter(owner = request.user)
     if len(orgnisation) >0:
         
-        organization = get_object_or_404(Organization, pk=pk)
+        # organization = get_object_or_404(Organization, pk=pk)
+        organization = get_object_or_404(Organization.objects.select_related('owner'), pk=pk)
         if request.user != organization.owner:
             return HttpResponseForbidden()
         if request.method == 'POST':
@@ -100,7 +103,11 @@ def organization_delete(request, pk):
 
 @login_required
 def project_list(request):
-    projects = Project.objects.filter(projectmember__user = request.user)
+    # projects = Project.objects.filter(projectmember__user = request.user)
+    projects = Project.objects.filter(members__user=request.user)\
+    .select_related('organization')\
+    .prefetch_related('members')
+    
     return render(request, 'project/project_list.html', {'projects': projects})
 
 
@@ -122,7 +129,8 @@ def project_create(request):
 @login_required
 def project_update(request, pk=None):
         
-    project = get_object_or_404(Project, pk=pk)
+    # project = get_object_or_404(Project, pk=pk)
+    project = get_object_or_404(Project.objects.select_related('organization'), pk=pk)
     if request.method == 'POST':
         form = ProjectForm(request.POST, instance=project, user=request.user)
         if form.is_valid():
@@ -148,16 +156,22 @@ def project_update(request, pk=None):
 #         form = AddMembersForm()
 #     return render(request, 'project/add_member.html', {'form': form, 'project': project})
 
+
 @login_required
 def add_member(request, pk):
-    project = get_object_or_404(Project, pk=pk)
+    # project = get_object_or_404(Project, pk=pk)
     
+    project = get_object_or_404(Project.objects.select_related('organization'), pk=pk)
     if request.method == 'POST':
         form = AddMembersForm(request.POST, project=project)
         if form.is_valid():
             users = form.cleaned_data['users']
             for user in users:
-                ProjectMember.objects.get_or_create(user=user, project=project)
+                pm = ProjectMember.objects.select_related('user').filter(user= user, project=project)
+                if pm:
+                    pm.delete()
+                else:
+                    ProjectMember.objects.get_or_create(user=user, project=project)
             return redirect('project_list')
     else:
         form = AddMembersForm(project=project)
@@ -169,15 +183,22 @@ def add_member(request, pk):
 
 @login_required
 def archived_project_list(request):
+    # projects = Project.all_objects.filter(members__user = request.user, is_deleted=True)
+    # members is related name against foreign key of project in projectmember model
     
-    projects = Project.all_objects.filter(projectmember__user = request.user, is_deleted=True)
+    projects = Project.all_objects.filter(members__user=request.user, is_deleted=True)\
+    .select_related('organization')\
+    .prefetch_related('members')
+    
     return render(request, 'project/archived_project_list.html', {'projects': projects})
+
 
 
 @login_required
 def project_delete(request, pk):
-
-    project = get_object_or_404(Project, pk=pk)
+    # project = get_object_or_404(Project, pk=pk)
+    
+    project = get_object_or_404(Project.objects.select_related('organization'), pk=pk)
     if request.method == 'POST':
         project.soft_delete()
         return redirect('project_list')
@@ -185,6 +206,14 @@ def project_delete(request, pk):
     return render(request, 'project/project_confirm_delete.html', {'object': project})
     
 
+@login_required
+def project_restore(request, pk):
+    project = get_object_or_404(Project.all_objects, pk=pk, is_deleted=True)
+    if request.method == 'POST':
+        project.restore()
+        return redirect('project_list')
+
+    return render(request, 'project/archived_project_list.html', {'object': project})
 
 
 
@@ -192,16 +221,16 @@ def project_delete(request, pk):
 
 
 
-
-
-
-
-
-
-
-
-
-
+# @login_required
+# def delete_member(request, pk):
+#     # project = get_object_or_404(Project, pk=pk)
+    
+#     projectmember = get_object_or_404(ProjectMember.objects.select_related('project'), pk=pk)
+#     if request.method == 'POST':
+#             return redirect('project_list')
+#     else:
+#         form = AddMembersForm(project=project)
+#     return render(request, 'project/add_member.html', {'form': form, 'project': project})
 
 
 

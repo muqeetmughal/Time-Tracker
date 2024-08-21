@@ -1,25 +1,94 @@
 {% extends "_base.html" %}
-{% load tailwind_filters %}
-
 {% block content %}
+
 <div class="p-4 sm:ml-64">
   <div class="p-4 dark:border-gray-700 mt-14">
-      <div class="container mx-auto p-6">
-        <h1 class="text-3xl text-center font-bold mb-8 text-gray-800">
-            Members:
-        </h1>
-        <div class="bg-white p-8 rounded-lg shadow-lg max-w-lg mx-auto">
-          <form method="post">
-            {% csrf_token %}
-            {{ form|crispy }}
-            <div class="mt-8 flex justify-end">
-              <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                Save
-              </button>
+    <div class="container mx-auto p-6">
+      <h1 class="text-3xl text-center font-bold mb-8 text-gray-800">
+        Members:
+      </h1>
+      <div class="bg-white p-8 rounded-lg shadow-lg max-w-lg mx-auto">
+        <form method="post">
+          {% csrf_token %}
+          
+          <div>
+            <label class="block text-gray-700 font-bold mb-2" for="users">Select Users</label>
+            <div id="selected-users" class="flex flex-wrap mb-4">
+              <!-- Preselected users will appear here -->
+              {% for user in form.users.initial %}
+              <div id="selected-user-{{ user.id }}" class="flex items-center bg-blue-200 text-blue-800 px-3 py-1 rounded-full mr-2 mb-2">
+                <span>{{ user.email }}</span>
+                <button type="button" class="ml-2 text-blue-600 hover:text-blue-800" onclick="removeUserTag({{ user.id }})">
+                  &times;
+                </button>
+                <input type="hidden" name="users" value="{{ user.id }}">
+              </div>
+              {% endfor %}
             </div>
-          </form>
-        </div>
+            <select id="user-select" class="form-control w-full">
+              <option value="" disabled selected>Select a user</option>
+              {% for user in form.users.field.queryset %}
+                <option value="{{ user.id }}" {% if user.id in form.existing_members %}class="bg-blue-100"{% endif %}>
+                  {{ user.email }} {% if user.id in form.existing_members %}(Member){% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mt-8 flex justify-end">
+            <button
+              type="submit"
+              class="bg-blue-600 text-white py-2 px-6 rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            >Save
+            </button>
+          </div>
+
+          
+
+        </form>
       </div>
     </div>
+  </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const userSelect = document.getElementById("user-select");
+    const selectedUsersContainer = document.getElementById("selected-users");
+
+    userSelect.addEventListener("change", function() {
+      const selectedOption = userSelect.options[userSelect.selectedIndex];
+      const userId = selectedOption.value;
+      const userEmail = selectedOption.text;
+
+      if (userId && !document.getElementById(`selected-user-${userId}`)) {
+        // Create tag element
+        const userTag = document.createElement("div");
+        userTag.id = `selected-user-${userId}`;
+        userTag.className = "flex items-center bg-blue-200 text-blue-800 px-3 py-1 rounded-full mr-2 mb-2";
+        userTag.innerHTML = `
+          <span>${userEmail}</span>
+          <button type="button" class="ml-2 text-blue-600 hover:text-blue-800" onclick="removeUserTag(${userId})">
+            &times;
+          </button>
+          <input type="hidden" name="users" value="${userId}">
+        `;
+
+        // Add tag to selected users container
+        selectedUsersContainer.appendChild(userTag);
+
+        // Clear the selection
+        userSelect.selectedIndex = 0;
+      }
+    });
+  });
+
+  function removeUserTag(userId) {
+    const userTag = document.getElementById(`selected-user-${userId}`);
+    if (userTag) {
+      userTag.remove();
+    }
+  }
+</script>
+
 {% endblock content %}
